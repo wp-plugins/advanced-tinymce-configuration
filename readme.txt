@@ -3,7 +3,7 @@ Contributors: azaozz
 Tags: wysiwyg, tinymce, editor
 Requires at least: 3.0
 Tested up to: 3.6
-Stable tag: 1.0
+Stable tag: 1.1
 
 Enables the user to set advanced options for TinyMCE, the WordPress WYSIWYG editor.
 
