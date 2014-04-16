@@ -3,7 +3,7 @@
 Plugin Name: Advanced TinyMCE Config
 Plugin URI: http://www.laptoptips.ca/projects/advanced-tinymce-configuration/
 Description: Set advanced options for TinyMCE, the visual editor in WordPress.
-Version: 1.1
+Version: 1.2
 Author: Andrew Ozz
 Author URI: http://www.laptoptips.ca/
 
@@ -14,6 +14,23 @@ Released under the GPL v.2, http://www.gnu.org/copyleft/gpl.html
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 */
+
+function advmceconf_is_mce_version_4() {
+	return ( isset( $GLOBALS['tinymce_version'] ) && substr( $GLOBALS['tinymce_version'], 0, 1 ) >= 4 );
+}
+
+add_action( 'pre_current_active_plugins', 'advmceconf_warn_plugins_screen' );
+function advmceconf_warn_plugins_screen( $plugins ) {
+	if ( advmceconf_is_mce_version_4() && get_option( 'advmceconf_version' ) < 12 ) {
+		?>
+		<div class="error"><p>
+			<?php
+			_e('The Advanced TinyMCE Config plugin requires attention: you are running TinyMCE 4.0 (WordPress 3.9 or newer) but the settings for the editor have not been updated. This can result in errors while editing, or the editor may fail completely.', 'advmceconf');
+			?>
+		</p></div>
+		<?php
+	}
+}
 
 add_filter( 'tiny_mce_before_init', 'advmceconf_config_mce', 1111 );
 function advmceconf_config_mce( $config ) {
@@ -134,6 +151,7 @@ function advmceconf_admin() {
 
 	$message = '';
 	$options = get_option( 'advmceconf_options', array() );
+	$version = get_option( 'advmceconf_version', 0 );
 
 	if ( ! empty($_POST['advmceconf_save']) ) {
 		check_admin_referer('advmceconf-save-options');
@@ -171,6 +189,13 @@ function advmceconf_admin() {
 			$message = '<div class="updated fade"><p>' . __('Options saved.', 'advmceconf') . '</p></div>';
 		}
 
+		if ( $version < 12 && advmceconf_is_mce_version_4() ) {
+			update_option( 'advmceconf_version', 12 );
+			$version = 12;
+		} elseif ( ! $version ) {
+			update_option( 'advmceconf_version', 11 );
+			$version = 11;
+		}
 	}
 
 	?>
@@ -179,25 +204,48 @@ function advmceconf_admin() {
 	<h2><?php _e('Advanced TinyMCE Settings', 'advmceconf'); ?></h2>
 	<?php
 
+	if ( $version < 12 && advmceconf_is_mce_version_4() ) {
+		?>
+		<div class="error"><p>
+		<?php
+			_e('You are running TinyMCE 4.0 (WordPress 3.9 or newer) but the settings for the editor have not been updated. This can result in errors while editing, or the editor may fail completely. ', 'advmceconf');
+			_e('(This notice will dissapear after the settings are updated.)', 'advmceconf');
+		?>
+		</p></div>
+		<?php
+	}
+
 	if ( $message )
 		echo $message;
 
 	?>
 	<div class="advmceconf-wrap">
 	<p><?php _e('To add a setting to TinyMCE type the name on the left and the value on the right. Do not add quotes around the setting name or value. To remove a setting, delete both the name and value. To add boolean values type <code>true</code> or <code>false</code>, these strings are converted to boolean.', 'advmceconf'); ?></p>
-	<p><?php _e('Description of all settings is available in the', 'advmceconf'); ?> <a href="http://www.tinymce.com/wiki.php/Configuration3x" target="_blank"><?php _e('TinyMCE documentation', 'advmceconf'); ?></a>.</p>
+	<p><?php _e('Description of all settings is available in the', 'advmceconf'); ?> <a href="http://www.tinymce.com/wiki.php" target="_blank"><?php _e('TinyMCE documentation', 'advmceconf'); ?></a>.</p>
 	<p><?php _e('Several of the more commonly used settings are:', 'advmceconf'); ?></p>
 	<ul class="ul-disc">
-	<li><a href="http://www.tinymce.com/wiki.php/Configuration3x:theme_advanced_blockformats" target="_blank">theme_advanced_blockformats</a></li>
-	<li><a href="http://www.tinymce.com/wiki.php/Configuration3x:theme_advanced_styles" target="_blank">theme_advanced_styles</a></li>
-	<li><a href="http://www.tinymce.com/wiki.php/Configuration3x:theme_advanced_text_colors" target="_blank">theme_advanced_text_colors</a></li>
-	<li><a href="http://www.tinymce.com/wiki.php/Configuration3x:theme_advanced_background_colors" target="_blank">theme_advanced_background_colors</a></li>
-	<li><a href="http://www.tinymce.com/wiki.php/Configuration3x:invalid_elements" target="_blank">invalid_elements</a></li>
-	<li><a href="http://www.tinymce.com/wiki.php/Configuration3x:extended_valid_elements" target="_blank">extended_valid_elements</a></li>
-	</ul>
+	<?php
 
-	<p><?php _e('You can also add settings for the default TinyMCE plugins. For example:', 'advmceconf'); ?>
-	<a href="http://www.tinymce.com/wiki.php/Plugin3x:paste" target="_blank">paste_retain_style_properties</a></p>
+	if ( advmceconf_is_mce_version_4() ) {
+		?>
+		<li><a href="http://www.tinymce.com/wiki.php/Configuration:block_formats" target="_blank">block_formats</a></li>
+		<li><a href="http://www.tinymce.com/wiki.php/Configuration:style_formats" target="_blank">style_formats</a></li>
+		<li><a href="http://www.tinymce.com/wiki.php/Configuration:invalid_elements" target="_blank">invalid_elements</a></li>
+		<li><a href="http://www.tinymce.com/wiki.php/Configuration:extended_valid_elements" target="_blank">extended_valid_elements</a></li>
+		<?php
+	} else {
+		?>
+		<li><a href="http://www.tinymce.com/wiki.php/Configuration3x:theme_advanced_blockformats" target="_blank">theme_advanced_blockformats</a></li>
+		<li><a href="http://www.tinymce.com/wiki.php/Configuration3x:theme_advanced_styles" target="_blank">theme_advanced_styles</a></li>
+		<li><a href="http://www.tinymce.com/wiki.php/Configuration3x:theme_advanced_text_colors" target="_blank">theme_advanced_text_colors</a></li>
+		<li><a href="http://www.tinymce.com/wiki.php/Configuration3x:theme_advanced_background_colors" target="_blank">theme_advanced_background_colors</a></li>
+		<li><a href="http://www.tinymce.com/wiki.php/Configuration3x:invalid_elements" target="_blank">invalid_elements</a></li>
+		<li><a href="http://www.tinymce.com/wiki.php/Configuration3x:extended_valid_elements" target="_blank">extended_valid_elements</a></li>
+		<?php
+	}
+
+	?>
+	</ul>
 	</div>
 
 	<table id="advmceconf-defaults" class="advmceconf-table showhide" style="display: none;">
