@@ -1,9 +1,11 @@
 === Advanced TinyMCE Configuration ===
 Contributors: azaozz
 Tags: wysiwyg, tinymce, editor
-Requires at least: 3.0
-Tested up to: 3.9
+Requires at least: 3.9
+Tested up to: 4.3
 Stable tag: 1.2
+License: GPLv2
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Enables the user to set advanced options for TinyMCE, the WordPress WYSIWYG editor.
 
